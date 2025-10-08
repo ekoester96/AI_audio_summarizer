@@ -1,28 +1,31 @@
 ## AI_audio_summarizer
-record and transcribe sound to text with python and have a local LLM create a summary of the recording for you
+Record audio with your device then transcribe the audio file using openai whisper and have a local LLM summarize the audio transcript for you. Could be great for customer service calls, lectures, or meetings. For apple M series chips you can use whisper.cpp to enable the gpu for transcribing which is much faster than the cpu but it might be more difficult when installing dependencies. 
 
-## 1. Install Python dependencies
+# Python dependencies
 
     pip install sounddevice scipy numpy openai-whisper requests
 
-# For macOS
+## For macOS make a directory to hold whisper.cpp models in a user directory then
 
-## 2. Install system audio backend (if missing)
+    brew install whisper-cpp
 
-    brew install portaudio
+# if the model ggml-base.en.bin is not in the models directory then run this command:
 
-# 3. Install Ollama
+    bash ./models/download-ggml-model.sh base.en
+
+# macOS Install Ollama
 
     brew install ollama
 
-# For Windows
-
-    https://ollama.com/download
-
-# 4. Pull the model
+# Pull the model
 
     ollama run granite3.3:2b
 
-# 5. Start Ollama service
+## For Windows download Ollama and use the non Apple version of the script
 
-    ollama serve
+    https://ollama.com/download
+
+    ollama run granite3.3
+
+
+    
