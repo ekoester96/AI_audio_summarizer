@@ -11,6 +11,9 @@ import sys
 import textwrap
 import time
 
+# Insert your own model path here
+MODEL_PATH = ""
+
 try:
     # Windows
     import msvcrt
@@ -32,7 +35,7 @@ except ImportError:
         return ch
 
 class LectureRecorder:
-    def __init__(self, filename: str = None, model_path: str = "/Users/ethankoester-schmidt/developer/whisper.cpp/models/ggml-base.en.bin"):
+    def __init__(self, filename: str = None, model_path: str = MODEL_PATH):
         self.is_recording = False
         self.audio_data = []
         self.sample_rate = 44100
