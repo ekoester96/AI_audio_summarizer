@@ -25,7 +25,7 @@ Record audio with your device then transcribe the audio file using openai whispe
 
     https://ollama.com/download
 
-    ollama run granite3.3
+    ollama run granite3.3:2b
 
 
     
