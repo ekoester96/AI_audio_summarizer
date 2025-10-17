@@ -10,29 +10,22 @@ import os
 import sys
 import textwrap
 import time
+import tty, termios
 
 # Insert your own model path here
 MODEL_PATH = ""
 
-try:
-    # Windows
-    import msvcrt
-    def getch():
-        """Gets a single character from the user without waiting for enter."""
-        return msvcrt.getch().decode()
-except ImportError:
-    # Unix-like (Linux, macOS)
-    import tty, termios
-    def getch():
-        """Gets a single character from the user without waiting for enter."""
-        fd = sys.stdin.fileno()
-        old_settings = termios.tcgetattr(fd)
-        try:
-            tty.setraw(sys.stdin.fileno())
-            ch = sys.stdin.read(1)
-        finally:
-            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-        return ch
+
+def getch():
+    """Gets a single character from the user."""
+    fd = sys.stdin.fileno()
+    old_settings = termios.tcgetattr(fd)
+    try:
+        tty.setraw(sys.stdin.fileno())
+        ch = sys.stdin.read(1)
+    finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+    return ch
 
 class LectureRecorder:
     def __init__(self, filename: str = None, model_path: str = MODEL_PATH):
@@ -115,23 +108,22 @@ class LectureRecorder:
         audio_int16 = (audio_resampled * 32767).astype(np.int16)
         # Save as 16-bit WAV at 16000 Hz
         wav.write(self.filename, self.target_sample_rate, audio_int16)
-        print(f"✅ Audio saved to {self.filename}")
+        print(f" Audio saved to {self.filename}")
         
         # Transcribe the audio
         self.transcribe_audio()
 
     def transcribe_audio(self):
     
-        print("\n🎙️ Transcribing audio with whisper.cpp...")
+        print("\n Transcribing audio with whisper.cpp...")
 
         # --- Path validation (your code is good) ---
         if not os.path.exists(self.binary_path):
-            print(f"❌ Binary not found: {self.binary_path}")
-            # ... (rest of your error message) ...
+            print(f" Binary not found: {self.binary_path}")
             return
 
         if not os.path.exists(self.model_path):
-            print(f"❌ Model not found: {self.model_path}")
+            print(f" Model not found: {self.model_path}")
             return
 
         try:
@@ -173,30 +165,30 @@ class LectureRecorder:
                     transcription = f.read().strip()
             else:
                 # This will now be a more meaningful error
-                print(f"❌ Transcription file not found after running whisper.cpp: {transcription_file_path}")
+                print(f" Transcription file not found after running whisper.cpp: {transcription_file_path}")
                 print("This can happen if the audio was silent or too short.")
                 return
 
             # Check if transcription is empty
             if not transcription:
-                print("⚠️  Transcription is empty. The audio might have been silent. Aborting summarization.")
+                print("Transcription is empty. The audio might have been silent. Aborting summarization.")
                 return
 
-            print("✅ Transcription complete!")
+            print("Transcription complete!")
             print(f"\nTranscription Preview:\n{transcription[:200]}...\n")
 
             # --- MODIFICATION 2: Pass the CORRECT file path for later deletion ---
             self.summarize_with_ollama(transcription, transcription_file_path)
 
         except subprocess.CalledProcessError as e:
-            print(f"❌ whisper.cpp failed with return code {e.returncode}")
+            print(f" whisper.cpp failed with return code {e.returncode}")
             # Print the error output from whisper.cpp to see what went wrong
             print("\n--- whisper.cpp ERROR output ---")
             print(e.stderr)
             print("--------------------------------")
             
         except Exception as e:
-            print(f"❌ An unexpected error occurred during transcription: {e}")
+            print(f" An unexpected error occurred during transcription: {e}")
 
     def summarize_with_ollama(self, transcription, transcription_file_to_delete):
         """Summarize transcription using Ollama"""
@@ -242,27 +234,27 @@ class LectureRecorder:
             summary_file = self.filename.replace('.wav', '_summary.txt')
             with open(summary_file, 'w', encoding='utf-8') as f:
                 f.write(wrapped_summary)
-            print(f"\n✅ Summary saved to {summary_file}")
+            print(f"\n Summary saved to {summary_file}")
             
             # --- MODIFICATION 3: Use the correct filename variable passed from the previous function ---
             try:
                 os.remove(transcription_file_to_delete)
-                print(f"🗑️  Transcription file deleted: {transcription_file_to_delete}")
+                print(f"  Transcription file deleted: {transcription_file_to_delete}")
             except Exception as e:
-                print(f"⚠️  Could not delete transcription file: {e}")
+                print(f"  Could not delete transcription file: {e}")
             
             # Delete audio file
             try:
                 os.remove(self.filename)
-                print(f"🗑️  Audio file deleted: {self.filename}")
+                print(f"  Audio file deleted: {self.filename}")
             except Exception as e:
-                print(f"⚠️  Could not delete audio file: {e}")
+                print(f"  Could not delete audio file: {e}")
             
         except requests.exceptions.RequestException as e:
-            print(f"❌ Error connecting to Ollama: {e}")
+            print(f" Error connecting to Ollama: {e}")
             print("Make sure Ollama is running ('ollama serve') and the model 'granite3.3:2b' is installed ('ollama pull granite3.3:2b').")
         except Exception as e:
-            print(f"❌ An unexpected error occurred during summarization: {e}")
+            print(f" An unexpected error occurred during summarization: {e}")
 
 
 def main():
@@ -282,7 +274,7 @@ def main():
     print(f"\nAudio will be saved as: {filename}")
     print("\n  Instructions:")
     print("  - Press SPACE to start/stop recording")
-    print("  - Press 'q' to exit\n")
+    print("  - Press 'q' to quit\n")
     
     # Main input loop
     while True:
@@ -293,24 +285,18 @@ def main():
         
         if char.lower() == 'q':
             if recorder.is_recording:
-                # Clear the instruction line
-                print(" " * 60, end='\r')
-                print("\n⚠️  Still recording! Stopping recording first...")
                 recorder.stop_recording()
                 # Wait for all processing to finish before exiting
                 time.sleep(1) 
-            print("\n👋 Exiting program...")
+                print("\n Exiting program...")
             break
         elif char == ' ':
             if not recorder.is_recording:
                 recorder.start_recording()
             else:
                 recorder.stop_recording()
-        elif ord(char) == 3: # Handle Ctrl+C to exit gracefully
-            print("\n\nCtrl+C detected. Exiting...")
-            if recorder.is_recording:
-                recorder.stop_recording()
-                time.sleep(1)
+                time.sleep(1) 
+                print("\n Exiting program...")
             break
 
 if __name__ == "__main__":
