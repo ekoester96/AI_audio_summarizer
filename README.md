@@ -3,9 +3,9 @@ Record audio with your device then transcribe the audio file using openai whispe
 
 # Python dependencies
 
-    pip install sounddevice scipy numpy openai-whisper requests
+    pip install sounddevice scipy numpy openai-whisper requests readchar
 
-## For macOS make a directory to hold whisper.cpp models in a user directory then
+## For macOS make a directory to hold whisper.cpp models in a user directory
 
     brew install whisper-cpp
 
@@ -17,7 +17,7 @@ Record audio with your device then transcribe the audio file using openai whispe
 
     brew install ollama
 
-# Pull the model
+# Pull a model
 
     ollama run granite3.3:2b
 
