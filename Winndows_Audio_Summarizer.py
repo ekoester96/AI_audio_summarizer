@@ -10,6 +10,9 @@ import sys
 import textwrap
 import time
 
+# Configuration
+OLLAMA_MODEL = 'granite3.3:2b'
+
 try:
     # Windows
     import msvcrt
@@ -101,7 +104,7 @@ class LectureRecorder:
         
         audio_array = np.concatenate(self.audio_data, axis=0)
         wav.write(self.filename, self.sample_rate, audio_array)
-        print(f"✅ Audio saved to {self.filename}")
+        print(f"Audio saved to {self.filename}")
         
         # Transcribe the audio
         self.transcribe_audio()
@@ -116,7 +119,7 @@ class LectureRecorder:
             result = model.transcribe(self.filename)
             transcription = result["text"]
             
-            print("✅ Transcription complete!")
+            print("Transcription complete!")
             print(f"\nTranscription:\n{transcription}\n")
             
             # Save transcription to file
@@ -128,7 +131,7 @@ class LectureRecorder:
             self.summarize_with_ollama(transcription, transcription_file)
             
         except Exception as e:
-            print(f"❌ Error during transcription: {e}")
+            print(f"Error during transcription: {e}")
     
     def summarize_with_ollama(self, transcription, transcription_file):
         """Summarize transcription using Ollama"""
@@ -150,7 +153,7 @@ Please format your response clearly with sections for Summary, Key Concepts, and
             response = requests.post(
                 'http://localhost:11434/api/generate',
                 json={
-                    'model': 'granite3.3:2b',
+                    'model': OLLAMA_MODEL,
                     'prompt': prompt,
                     'stream': False
                 }
@@ -174,28 +177,28 @@ Please format your response clearly with sections for Summary, Key Concepts, and
                 summary_file = self.filename.replace('.wav', '_summary.txt')
                 with open(summary_file, 'w', encoding='utf-8') as f:
                     f.write(wrapped_summary)
-                print(f"\n✅ Summary saved to {summary_file}")
+                print(f"\n Summary saved to {summary_file}")
                 
                 # Delete transcription file
                 try:
                     os.remove(transcription_file)
-                    print(f"🗑️  Transcription file deleted: {transcription_file}")
+                    print(f"Transcription file deleted: {transcription_file}")
                 except Exception as e:
-                    print(f"⚠️  Could not delete transcription file: {e}")
+                    print(f"Could not delete transcription file: {e}")
                 
                 # Delete audio file
                 try:
                     os.remove(self.filename)
-                    print(f"🗑️  Audio file deleted: {self.filename}")
+                    print(f"Audio file deleted: {self.filename}")
                 except Exception as e:
-                    print(f"⚠️  Could not delete audio file: {e}")
+                    print(f"Could not delete audio file: {e}")
                 
             else:
-                print(f"❌ Error from Ollama: {response.status_code}")
+                print(f" Error from Ollama: {response.status_code}")
                 print(response.text)
                 
         except Exception as e:
-            print(f"❌ Error connecting to Ollama: {e}")
+            print(f" Error connecting to Ollama: {e}")
             print("Make sure Ollama is running and the specified model is installed.")
 
 def main():
@@ -229,11 +232,11 @@ def main():
             if recorder.is_recording:
                 # Clear the instruction line
                 print(" " * 60, end='\r')
-                print("\n⚠️  Still recording! Stopping recording first...")
+                print("\n Still recording! Stopping recording first...")
                 recorder.stop_recording()
                 # Wait for all processing to finish before exiting
                 time.sleep(1) 
-            print("\n👋 Exiting program...")
+            print("\n Exiting program...")
             break
         elif char == ' ':
             if not recorder.is_recording:
